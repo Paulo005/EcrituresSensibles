@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Écritures sensibles</title>
+</head>
+<body>
+    <h1>Demo</h1>
+    <p id="dataReader" ></p>
+
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+    <script>
+        const dataReader = document.querySelector('#dataReader')
+        const socket = io.connect('ws://localhost:3000');
+        socket.on('newDataFromInput', (data) => {
+            console.log(data)
+            dataReader.innerHTML = JSON.stringify(data)
+        })
+    </script>
+</body>
+</html>
