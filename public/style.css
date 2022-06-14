@@ -1,0 +1,36 @@
+@font-face {
+    font-family: "SensitiveGX";
+    src: url('medias/SensitiveGX.ttf')  format('truetype');
+}
+
+@font-face {
+    font-family: "Metaballs";
+    src: url("medias/MetaballsVFTrial.ttf") format('truetype');
+}
+
+@font-face {
+    font-family: "Haptique";
+    src: url("medias/Haptique-VF.ttf") format('truetype');
+}
+
+html, body{
+    margin: 0; padding: 0;
+}
+
+span{
+    font-family: "Haptique", "Metaballs", "SensitiveGX", serif;
+    font-size: 100px;
+    font-weight: 10;
+    margin: 0 20px 0 0;
+    color: black;
+}
+
+.writing_zone{
+    padding: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    font-size: 30px;
+    font-weight: 10;
+}

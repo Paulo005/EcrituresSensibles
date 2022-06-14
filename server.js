@@ -8,6 +8,8 @@ const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static('public'))
+
+  
 app.get('/', function (req, res) {
    res.sendFile('index.html', { root: __dirname })
 })
@@ -20,7 +22,15 @@ app.get('/json', function (req, res) {
 * Socket IO
 */
 const server = require('http').Server(app)
-const io = require('socket.io')(server)
+
+const io = require("socket.io")(server, {
+    cors: {
+      origin: "http://127.0.0.1:3000",
+      credentials: true,
+      methods: ["GET", "POST"]
+    }
+});
+
 io.on('connection', (socket) =>{
     console.log(`Connecté au client ${socket.id}`)
 })
@@ -30,27 +40,38 @@ io.on('connection', (socket) =>{
 * Port reading
 */
 var serialport = require('serialport');
-var portName = process.argv[2];
+var portName = 'COM8';
 
-// var myPort = new serialport(portName, {
-//     baudRate: 9600,
-//     parser: new serialport.parsers.Readline('\r\n')
-// })
+var myPort = new serialport(portName, {
+    baudRate: 9600,
+    lock: false
+})
+
+const parser = myPort.pipe(new serialport.parsers.Readline({ delimiter: '\r\n'}))
 
 // setInterval(_ => {
 //     onData({'now': Date.now()})
 // }, 1000)
 
 myPort.on('open', onOpen);
-myPort.on('data', onData);
+//myPort.on('data', onData);
 
 function onOpen(){
     console.log('Open connections!');
+    parser.on('data', onData)
 }
 
 function onData(data){
-    io.emit('newDataFromInput', data)
-    //console.log('data : ' + data);
+    //const intVal = parseInt(data)
+
+    io.emit('newDataFromInput', data)   
+
+    // if (!isNaN(intVal)) {
+    //     io.emit('newDataFromInput', parseInt(data))
+    // }
+
+    //console.log(parseInt(data), ' _ ', data);
+    console.log(data);
 }
 
 // App launching

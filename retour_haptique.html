@@ -19,10 +19,8 @@
         <!-- EMPTY FOR NOW -->
     </div>
 
-
-    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"
-        integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh"
-        crossorigin="anonymous"></script>
+    
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
 
     <script>
         //Ce programme permet de réception des valeurs d'un capteur analogique Arduino dans un script JS, relayées par les librairie Node JS et Socket IO
@@ -32,7 +30,6 @@
 
         //Réception des données par Node JS
 
-
         const socket = io.connect("ws://localhost:3000", {
             withCredentials: true,
             extraHeaders: { "my-custom-header": "abcd" }
@@ -41,8 +38,8 @@
         const dataReader = document.querySelector('#dataReader')
 
 
-        let minimum = 400;    //Sert au mapping des valeurs Arduino/Typo :
-        let maximum = 1800;
+        let minimum = 100;    //Sert au mapping des valeurs Arduino/Typo :
+        let maximum = 700;
 
         let values_array = [];
 
@@ -50,23 +47,21 @@
 
         let classCounter = 0; //Incrémenter les SPANs
 
-        var wordDatasJS = {}
-        var value = 0;
-
 
         // ↓ Map les valeurs mini et maxi captée par arduino sur les parametres de graisse d'une typo flexible (0 - 999)
 
-        function scale(number, inMin, inMax, outMin, outMax) {
-            var scaled = (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+        function scale(number, inMin, inMax, outMin, outMax) { 
 
+            var scaled = (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
             if (scaled <= minimum) { //Eviter valeur < à 0
-                scaled = outMin;
+                scaled = 400;
             }
-            if (scaled >= maximum) { //Evite valeur > à 999
-                scaled = outMax;
+            if (scaled >= 700) { //Evite valeur > à 999
+                scaled = 700;
             }
             return scaled; //renvoie un nombre mappé
-        }
+        
+        } 
 
 
         // ↓ Créer une lettre, lui donne une class unique et push la lettre dans la div "writing_zone"
@@ -110,17 +105,17 @@
 
 
         // ↓ Rend interactif la fontWeight sur les appuis prolongé
-
+        
         function appuieEnCours(valeur) {
+
             document.querySelector(".lettre" + classCounter).style.fontWeight = scale(valeur, minimum, maximum, 400, 700);
-            value = document.querySelector(".lettre" + classCounter).style.fontWeight;
         }
 
 
         // ↓ fonction principale déclenchée à chaque données reçes, qui déclenche les autres
 
         socket.on('newDataFromInput', (data) => {
-
+            
             let index_valeur = data.split(';'); //crée tableau avec index, valeur séparés
 
             values_array.push(index_valeur[1]); //met la data dans un tableau
@@ -131,47 +126,19 @@
 
             if (index_valeur[1] != 0) { //ON APPUIE
                 if (nouvelAppuie == true) {
-                    value = minimum;
                     nouvelAppuie = false;
                     createSpan(index_valeur[0])
-                    wordDatasJS[classCounter] = value
                 }
                 else {
                     console.log(index_valeur);
                     appuieEnCours(index_valeur[1])
-                    wordDatasJS[classCounter] = value
                 }
             }
 
-            else { //ON APPUIE PAS
+            else{ //ON APPUIE PAS
                 nouvelAppuie = true;
             }
         })
-
-        document.addEventListener("keydown", (e) => {
-            if (e.key == "Enter") {
-                let content = '{"0":"';
-                
-                document.querySelectorAll('span').forEach(span =>
-                    content += span.innerHTML
-                );
-                
-                content += '", '
-
-
-                for (i = 0; i < Object.keys(wordDatasJS).length - 1; i++) {
-                    content += `"${Object.keys(wordDatasJS)[i]}":${wordDatasJS[Object.keys(wordDatasJS)[i]]}, `
-                }
-
-                const dernier = Object.keys(wordDatasJS).length - 1
-                content += `"${Object.keys(wordDatasJS)[dernier]}":${wordDatasJS[dernier]}}`
-
-                let a = document.createElement('a');
-                a.href = "data:application/octet-stream," + encodeURIComponent(content);
-                a.download = 'wordDatas.txt';
-                a.click();
-            }
-        });
     </script>
 </body>
 
