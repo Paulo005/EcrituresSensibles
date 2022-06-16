@@ -13,10 +13,14 @@
 </head>
 
 <body>
-    <p id="dataReader"></p>
+    <div class="content">
+        <p>Bonjour !</p>
 
-    <div class="writing_zone">
-        <!-- EMPTY FOR NOW -->
+        <div class="writing_zone image-clignote">
+            <!-- EMPTY FOR NOW -->
+        </div>
+
+        <a class="save">Télécharger votre retour haptique</a>
     </div>
 
 
@@ -25,6 +29,8 @@
         crossorigin="anonymous"></script>
 
     <script>
+        chrono();
+
         //Ce programme permet de réception des valeurs d'un capteur analogique Arduino dans un script JS, relayées par les librairie Node JS et Socket IO
         //Il associe les valeurs captées à la graisse d'une typographie variable et permet l'écriture
 
@@ -43,6 +49,8 @@
 
         let minimum = 400;    //Sert au mapping des valeurs Arduino/Typo :
         let maximum = 1800;
+
+        var millisecondes = 0;
 
         let values_array = [];
 
@@ -78,6 +86,9 @@
 
             classCounter += 1;
 
+            wordDatasJS[classCounter + 0.1] = millisecondes
+            millisecondes = 0;
+
             switch (index) {
                 case "0":
                     newP.textContent = 'B';
@@ -105,16 +116,28 @@
                     break;
                 default:
                     console.log(`Sorry, we are out of ${index}.`);
+
+
             }
+        }
+
+        function chrono() {
+            setInterval(() => {
+                millisecondes++;
+            }, 1);
         }
 
 
         // ↓ Rend interactif la fontWeight sur les appuis prolongé
 
+
         function appuieEnCours(valeur) {
             document.querySelector(".lettre" + classCounter).style.fontWeight = scale(valeur, minimum, maximum, 400, 700);
             value = document.querySelector(".lettre" + classCounter).style.fontWeight;
         }
+
+
+
 
 
         // ↓ fonction principale déclenchée à chaque données reçes, qui déclenche les autres
@@ -134,10 +157,13 @@
                     value = minimum;
                     nouvelAppuie = false;
                     createSpan(index_valeur[0])
+
                     wordDatasJS[classCounter] = value
+                    document.querySelector('.save').style.opacity = '1'
+                    document.querySelector('.writing_zone').classList.remove("image-clignote");
+                    document.querySelector('.writing_zone').style.borderLeft = 'none';
                 }
                 else {
-                    console.log(index_valeur);
                     appuieEnCours(index_valeur[1])
                     wordDatasJS[classCounter] = value
                 }
@@ -148,27 +174,24 @@
             }
         })
 
-        document.addEventListener("keydown", (e) => {
+        document.querySelector('.save').addEventListener("click", (e) => {
             if (e.key == "Enter") {
                 let content = '{"0":"';
-                
+
                 document.querySelectorAll('span').forEach(span =>
                     content += span.innerHTML
                 );
-                
+
                 content += '", '
-
-
-                for (i = 0; i < Object.keys(wordDatasJS).length - 1; i++) {
+                for (i = 0; i < Object.keys(wordDatasJS).length; i++) {
                     content += `"${Object.keys(wordDatasJS)[i]}":${wordDatasJS[Object.keys(wordDatasJS)[i]]}, `
                 }
-
-                const dernier = Object.keys(wordDatasJS).length - 1
-                content += `"${Object.keys(wordDatasJS)[dernier]}":${wordDatasJS[dernier]}}`
+                content = content.slice(0, -2);
+                content += `}`
 
                 let a = document.createElement('a');
                 a.href = "data:application/octet-stream," + encodeURIComponent(content);
-                a.download = 'wordDatas.txt';
+                a.download = 'haptique.txt';
                 a.click();
             }
         });
